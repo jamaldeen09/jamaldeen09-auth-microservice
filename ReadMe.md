@@ -147,11 +147,9 @@ npm run dev
 
 
 ---
-
-This is **GitHub-ready** — clean formatting, copyable code blocks, Mermaid diagram for visuals, and professional tone.  
-Would you like me to give you a **shorter README version** too (for your project’s frontend auth demo), or just keep this long one for the backend repo?
-
 Author
  - Jamaldeen
  - https://github.com/jamaldeen09 (Github)
 
+Repo
+ - https://github.com/jamaldeen09/auth-microservice (Github)

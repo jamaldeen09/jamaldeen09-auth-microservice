@@ -102,8 +102,6 @@ const checkAuthState = async (
             statusCode: 200,
         }
     } catch (err: unknown) {
-        console.error(`Error in "checkAuthState" service in file "auth.services.ts": ${err}`);
-
         // ** JWT error handling ** \\
         if (err instanceof jwt.JsonWebTokenError)
             return {
