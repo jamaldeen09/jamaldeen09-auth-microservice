@@ -150,6 +150,3 @@ npm run dev
 Author
  - Jamaldeen
  - https://github.com/jamaldeen09 (Github)
-
-Repo
- - https://github.com/jamaldeen09/auth-microservice (Github)
