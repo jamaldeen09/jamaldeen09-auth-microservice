@@ -1,15 +1,13 @@
 {
-  "name": "authenticatio-demo",
+  "name": "authentication-demo",
   "version": "1.0.0",
   "description": "MERN stack authentication system",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
+    "build": "tsc",
     "start": "node dist/server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
