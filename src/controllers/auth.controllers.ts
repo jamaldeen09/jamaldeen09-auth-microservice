@@ -260,8 +260,8 @@ const logout = async (
             });
 
         // ** Clear the users cookies ** \\
-        res.clearCookie("accessToken", { path: "/api/v1" });
-        res.clearCookie("refreshToken", { path: "/api/v1" });
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
         deleteOperation(`user:${user._id}`);
 
         // ** Return a success response ** \\
