@@ -17,10 +17,9 @@ const setCookie = (
 ) => {
     res.cookie(cookieName, cookieValue, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        secure: true,
+        sameSite: "none",
         maxAge,
-        path: "/api/v1"
     });
 }
 
