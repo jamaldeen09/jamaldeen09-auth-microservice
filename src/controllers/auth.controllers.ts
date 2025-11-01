@@ -32,7 +32,7 @@ const register = async (
         });
 
         // ** Create tokens to attach to cookies and send to the requesting client ** \\
-        setUpTokens(req, res, {
+        const { accessToken, refreshToken } = setUpTokens(req, res, {
             name: newUser.name,
             _id: newUser._id,
             email: newUser.email
@@ -43,7 +43,11 @@ const register = async (
             success: true,
             message: "Account successfully created",
             statusCode: 201,
-            data: { auth: { userId: newUser._id, name: newUser.name } }
+            data: { 
+                auth: {userId: newUser._id, name: newUser.name},
+                accessToken,
+                refreshToken
+            }
         });
     } catch (err) {
         console.error(`Error occured in "register" controller in file "auth.controllers.ts": ${err}`);
@@ -92,7 +96,7 @@ const login = async (
             })
 
         // ** Create tokens to attach to cookies and send to the requesting client ** \\
-        setUpTokens(req, res, {
+        const { accessToken, refreshToken } = setUpTokens(req, res, {
             name: user.name,
             _id: user._id,
             email: user.email
@@ -103,7 +107,11 @@ const login = async (
             success: true,
             message: "Account successfully logged into",
             statusCode: 200,
-            data: { auth: { userId: user._id, name: user.name } }
+            data: { 
+                auth: { userId: user._id, name: user.name },
+                accessToken,
+                refreshToken
+            }
         });
     } catch (err) {
         console.error(`Error occured in "login" controller in file "auth.controllers.ts": ${err}`);
@@ -119,7 +127,7 @@ const login = async (
 };
 
 // ** Get an authenticated users auth state ** \\
-const getAuth = async (
+const getAuth = async ( 
     req: Request,
     res: ApiResponse
 ): ControllerResponse => {
@@ -209,8 +217,7 @@ const refreshToken = async (
             name: user.name,
         } as TokenPayload["accessToken"]);
 
-        // ** Set cookie ** \\
-        setCookie("accessToken", accessToken, 15 * 60 * 1000, res);
+    
 
         // ** Store the user in cache ** \\
         writeOperation<Omit<Credentials["register"], "password"> & { _id: string; }>(
@@ -223,7 +230,10 @@ const refreshToken = async (
             success: true,
             message: "Token refreshed successfully",
             statusCode: 200,
-            data: { auth: { userId: user._id, name: user.name } }
+            data: { 
+                auth: { userId: user._id, name: user.name },
+                accessToken,
+            }
         });
     } catch (err) {
         console.error(`Error occured in "refreshToken" controller in file "auth.controllers.ts": ${err}`);
@@ -260,8 +270,6 @@ const logout = async (
             });
 
         // ** Clear the users cookies ** \\
-        res.clearCookie("accessToken");
-        res.clearCookie("refreshToken");
         deleteOperation(`user:${user._id}`);
 
         // ** Return a success response ** \\

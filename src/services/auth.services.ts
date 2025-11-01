@@ -69,64 +69,97 @@ class ExpressValidation {
 }
 
 // ** Custom class to handle token verification ** \\
+
 const checkAuthState = async (
     req: Request,
-    res: ApiResponse,
+    res: Response,
     tokenType: "accessToken" | "refreshToken"
 ): Promise<ApiResponsePayload> => {
     try {
-        // ** Extract the users cookies ** \\
-        const cookieWithToken = req.cookies[tokenType];
+        // ** Extract token from headers instead of cookies ** \\
+        const rawHeader =
+            tokenType === "accessToken"
+                ? req.headers.authorization
+                : req.headers["x-refresh-token"];
 
-        // ** Check if the users cookies evn exist ** \\
-        if (!cookieWithToken)
+        // ** Handle possible string[] header type ** \\
+        const authHeader = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
+
+        if (!authHeader)
             return {
                 success: false,
-                message: "Unauthorized",
+                message: "Unauthorized: Token missing",
                 statusCode: 401,
             };
 
-        // ** If it does exist attach decoded payload to request ** \\
-        const decoded = jwt.verify(cookieWithToken, envData[tokenType === "accessToken" ? "ACCESS_TOKEN_SECRET" : "REFRESH_TOKEN_SECRET"]) as TokenPayload["accessToken"] | TokenPayload["refreshToken"];
+        // ** Split header format: "Bearer <token>" ** \\
+        const token = authHeader.startsWith("Bearer ")
+            ? authHeader.split(" ")[1]
+            : authHeader;
 
+        if (!token)
+            return {
+                success: false,
+                message: "Unauthorized: Invalid token format",
+                statusCode: 401,
+            };
+
+        // ** Verify JWT ** \\
+        const decoded = jwt.verify(
+            token,
+            tokenType === "accessToken"
+                ? envData.ACCESS_TOKEN_SECRET
+                : envData.REFRESH_TOKEN_SECRET
+        ) as TokenPayload[typeof tokenType];
+
+        // ** Attach decoded payload to request ** \\
         if (tokenType === "accessToken") {
-            (req as ConfiguredRequest).accessTokenPayload = decoded as TokenPayload["accessToken"];
+            (req as ConfiguredRequest).accessTokenPayload = decoded as {
+                userId: string;
+                name: string;
+            };
         } else {
-            (req as ConfiguredRequest).refreshTokenPayload = decoded as TokenPayload["refreshToken"];
+            (req as ConfiguredRequest).refreshTokenPayload = decoded as {
+                userId: string;
+            }
         }
 
         return {
             success: true,
-            message: "Token attached",
+            message: "Token verified successfully",
             statusCode: 200,
-        }
+        };
     } catch (err: unknown) {
-        // ** JWT error handling ** \\
+        // ** Handle token expiration ** \\
+        if (err instanceof jwt.TokenExpiredError)
+            return {
+                success: false,
+                message: "Token expired",
+                statusCode: 403,
+                error: "TokenExpiredError",
+            };
+
+        // ** Handle malformed token ** \\
         if (err instanceof jwt.JsonWebTokenError)
             return {
                 success: false,
                 message: "Invalid token",
                 statusCode: 403,
-                error: "Token error"
+                error: "JsonWebTokenError",
             };
 
-        if (err instanceof jwt.TokenExpiredError)
-            return {
-                success: false,
-                message: "Token has expired",
-                statusCode: 403,
-                error: "Token expired error"
-            };
-
-        // ** Server error handling ** \\
+        // ** Catch-all for unexpected server errors ** \\
+        console.error("JWT verification failed:", err);
         return {
             success: false,
-            message: "A server error occured while trying to verify your token",
+            message: "Internal server error during token verification",
             statusCode: 500,
-            error: "Internal server error"
-        }
+            error: "Internal server error",
+        };
     }
-}
+};
+
+
 
 // ** Custom function to create a token ** \\
 const createToken = (
@@ -166,9 +199,6 @@ const setUpTokens = (
         userId: userPayload._id,
     } as TokenPayload["refreshToken"]);
 
-    // ** Set cookies ** \\
-    setCookie("accessToken", accessToken, 15 * 60 * 1000, res);
-    setCookie("refreshToken", refreshToken, 5 * 24 * 60 * 60 * 1000, res);
 
     // ** Store the user in cache ** \\
     const cacheKey = `user:${userPayload._id}`
@@ -179,7 +209,10 @@ const setUpTokens = (
     };
 
     writeOperation<Omit<Credentials["register"], "password"> & { _id: string; }>(cacheKey, cacheValue);
-    return;
+    return {
+        accessToken,
+        refreshToken,
+    };
 };
 
 // ** Exports ** \\

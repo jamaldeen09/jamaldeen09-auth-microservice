@@ -1,7 +1,7 @@
 # 🚀 Auth Microservice (TypeScript + Node + Express + MongoDB)
 
 ## 🔒 Overview
-This service handles **user authentication and authorization** with **JWT-based access & refresh tokens**, **HTTP-only cookies**, and a **caching layer** for performance.
+This service handles **user authentication and authorization** with **JWT-based access & refresh tokens**, **and a **caching layer** for performance.
 
 It’s designed as a **standalone microservice** — plug it into any frontend (Next.js, React, etc.) or API gateway.  
 Built with **production-grade patterns**: token rotation, short-lived access tokens, robust error handling, and full TypeScript safety.
@@ -29,7 +29,7 @@ src/
 │ └── auth.controllers.ts # Core authentication logic
 │
 ├── services/
-│ ├── auth.services.ts # Token & cookie utilities
+│ ├── auth.services.ts # Token utilities
 │ ├── cache.services.ts # In-memory (Map) or Redis caching
 │
 ├── models/
@@ -61,8 +61,6 @@ NODE_ENV=development
 ### Core Features
 
  - JWT-based access + refresh tokens
-
- - Secure HTTP-only cookies
 
  - Password hashing with bcrypt
 
@@ -102,8 +100,7 @@ You can deploy this backend to:
 
 For your frontend, use Vercel.
 
-🔁 Always set CORS origin to your frontend domain (e.g. https://auth-demo.vercel.app)
-and cookie.sameSite to "none" with secure: true if you’re serving over HTTPS.
+🔁 Always set CORS origin to your frontend domain (e.g. https://auth-frontend-jade.vercel.app)
 
 ---
 sequenceDiagram
