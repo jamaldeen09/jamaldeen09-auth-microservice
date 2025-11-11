@@ -284,7 +284,7 @@ const logout = async (
         // ** Error handling ** \\
         return res.status(500).json({
             success: false,
-            message: "A server error occured while trying to refresh your token",
+            message: "A server error occured while trying to log you out of your account",
             statusCode: 500,
             error: "Internal server error"
         })
